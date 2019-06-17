@@ -1,11 +1,9 @@
 package com.belatrix.snippet;
 
 import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.Statement;
-import java.util.Map;
+import java.util.Arrays;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +11,8 @@ import org.slf4j.LoggerFactory;
 import com.belatrix.snippet.constants.MessageLevel;
 
 /**
- * Class to save Logs on Database, Textfiles and Console
+ * Class to save Logs on Database, Textfiles and Console with custom levels
+ * MESSAGE,ERROR,WARNING
  * 
  * @author beto
  *
@@ -22,16 +21,12 @@ public class JobLogger {
 
 	private static boolean logToFile;
 	private static boolean logToConsole;
-	private static boolean logMessage;
-	private static boolean logWarning;
-	private static boolean logError;
 	private static boolean logToDatabase;
-	private static Map dbParams;
 	private static Logger rootLogger;
 	private static Logger consoleLogger;
 	private static Logger fileLogger;
 	private static Logger dbLogger;
-	private static String severity;
+	private static String[] severities;
 	private static Properties appProps;
 
 	/**
@@ -54,42 +49,53 @@ public class JobLogger {
 				appProps.load(is);
 				rootLogger.debug("Loaded app.properties");
 			} catch (Exception e) {
-				rootLogger.warn("Could not load app.properties with error : " + e.getMessage());
+				rootLogger.warn("Could not load app.properties with error : {}", e.getMessage());
 			}
 		}
-		logToFile = Boolean.parseBoolean(getProperty("logToFile"));
-		logToConsole = Boolean.parseBoolean(getProperty("logToConsole"));
-		logToDatabase = Boolean.parseBoolean(getProperty("logToDB"));
-		severity = getProperty("severity");
-	}
-
-	public static String getProperty(String name) {
-
-		rootLogger.debug("returning property: " + name + " - " + appProps.getProperty(name));
-		return appProps.getProperty(name);
+		
+		logToFile = Boolean.parseBoolean(appProps.getProperty("logToFile"));
+		logToConsole = Boolean.parseBoolean(appProps.getProperty("logToConsole"));
+		logToDatabase = Boolean.parseBoolean(appProps.getProperty("logToDB"));
+		String severity = appProps.getProperty("severity");
+		severities = Pattern.compile(",").split(severity);
 	}
 
 	/**
-	 * @param messageText : the message to be logged
+	 * Logs a message using a specific level. Levels allowed are configured on
+	 * app.properties Log Outputs allowed are configured on app.properties Database
+	 * loads configuration from db.properties Loggers load configuration from
+	 * log4j2.xml
+	 * 
+	 * @param messageText : String - the message to be logged
+	 * @param level       : MessageLevel Enum - the level of the message
 	 * @throws Exception
 	 */
-	public static void LogMessage(String messageText, MessageLevel level) {
+	public static void logMessage(String messageText, MessageLevel level) {
 
-		if (messageText == null || messageText.length() == 0 || level == null) {
+		// Validate input
+
+		if (messageText == null || messageText.length() == 0) {
 			return;
 		}
+
+		// Validate level
+
+		if (level == null || Arrays.stream(severities).parallel().noneMatch(s -> s.equals(level.toString())))
+			return;
 
 		// Selectively choose destiny
 
 		if (logToFile)
-			fileLogger.info("FILE LOGGER WORKING : " + level + " - " + messageText);
+			fileLogger.info("FILE LOGGER WORKING : {} - {}", level, messageText);
 
 		if (logToConsole)
-			consoleLogger.info("CONSOLE LOGGER WORKING : " + level + " - " + messageText);
+			consoleLogger.info("CONSOLE LOGGER WORKING : {} - {}", level, messageText);
 
 		if (logToDatabase) {
-			dbLogger.info("DATABASE LOGGER WORKING  : " + level + " - " + messageText);
+			dbLogger.info("DATABASE LOGGER WORKING : {} - {}", level, messageText);
 		}
 	}
 
+	private JobLogger() {
+	}
 }

@@ -24,7 +24,7 @@ public class HikariCPDataSource {
 			dbProps.load(is);
 			logger.debug("Loaded db.properties");
 		} catch (Exception e) {
-			logger.debug("Could not load app.properties with error : " + e.getMessage());
+			logger.debug("Could not load app.properties with error : {}",e.getMessage());
 		}
 	}
 
