@@ -5,7 +5,7 @@
 		<Property name="LOG_PATTERN">%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} %p %m%n</Property>
 		<Property name="LOG_PATH">c:/Users/beto</Property>
 	</Properties>
-	
+
 	<Appenders>
 
 		<!-- Console Appender -->
@@ -14,7 +14,7 @@
 		</Console>
 
 		<!-- File Appenders on need basis -->
-		<RollingFile name="FileAppender" fileName="${LOG_PATH}/jobLogger.log" filePattern="${LOG_PATH}/jobLogger-%d{yyyy-MM-dd}-%i.log">
+		<RollingFile name="FileAppender" fileName="${LOG_PATH}/logFile.txt" filePattern="${LOG_PATH}/logFile-%d{yyyy-MM-dd}-%i.log">
 			<!-- <LevelRangeFilter minLevel="INFO" maxLevel="INFO" onMatch="ACCEPT" onMismatch="DENY" /> -->
 			<PatternLayout pattern="${LOG_PATTERN}" />
 			<Policies>
@@ -22,12 +22,30 @@
 			</Policies>
 			<DefaultRolloverStrategy max="10" />
 		</RollingFile>
-		
+
+		<JDBC name="DBAppender" tableName="app_logs">
+			<ConnectionFactory class="com.belatrix.snippet.database.HikariCPDataSource" method="getConnection" />
+			<Column name="log_id" pattern="%u" isUnicode="false" />
+			<Column name="entry_date" isEventTimestamp="true" />
+			<Column name="logger" pattern="%logger" isUnicode="false" />
+			<Column name="log_level" pattern="%level" isUnicode="false" />
+			<Column name="message" pattern="%m" isUnicode="false" />
+			<Column name="exception" pattern="%throwable " isUnicode="false" />
+		</JDBC>
+
 	</Appenders>
 	<Loggers>
-		<Logger name="com.belatrix.snippet" level="info" additivity="false">
-			<appender-ref ref="FileAppender" />
+		<Logger name="consoleLogger" level="debug" additivity="false">
 			<appender-ref ref="ConsoleAppender" />
 		</Logger>
+		<Logger name="fileLogger" level="debug" additivity="false">
+			<appender-ref ref="FileAppender" />
+		</Logger>
+		<Logger name="dbLogger" level="debug" additivity="false">
+			<appender-ref ref="DBAppender" />
+		</Logger>
+		<Root level="debug">
+			<AppenderRef ref="ConsoleAppender" />
+		</Root>
 	</Loggers>
 </Configuration>
