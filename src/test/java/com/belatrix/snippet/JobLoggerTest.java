@@ -5,7 +5,7 @@ import static org.junit.Assert.*;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Before;
-import org.junit.Ignore;
+//import org.junit.Ignore;
 import org.junit.Test;
 
 public class JobLoggerTest {
@@ -27,15 +27,10 @@ public class JobLoggerTest {
 		dbParams.put("dbms", "postgresql");
 		dbParams.put("serverName", "localhost");
 		dbParams.put("portNumber", "5432");
+		dbParams.put("logFileFolder", "C:/Users/beto");
 		logToConsole = logToFile = logToDatabase = true;
 		logMessage = logWarning = logError = true;
 		jobLogger = new JobLogger(logToFile, logToConsole, logToDatabase, logMessage, logWarning, logError, dbParams);
-	}
-
-	@Ignore
-	@Test
-	public void testJobLogger() {
-		fail("Not yet implemented");
 	}
 
 	@Test

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="warn" monitorInterval="30">
+	<!-- Logging Properties -->
+	<Properties>
+		<Property name="LOG_PATTERN">%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} %p %m%n</Property>
+		<Property name="LOG_PATH">c:/Users/beto</Property>
+	</Properties>
+	
+	<Appenders>
+
+		<!-- Console Appender -->
+		<Console name="ConsoleAppender" target="SYSTEM_OUT">
+			<PatternLayout pattern="${LOG_PATTERN}" />
+		</Console>
+
+		<!-- File Appenders on need basis -->
+		<RollingFile name="FileAppender" fileName="${LOG_PATH}/jobLogger.log" filePattern="${LOG_PATH}/jobLogger-%d{yyyy-MM-dd}-%i.log">
+			<!-- <LevelRangeFilter minLevel="INFO" maxLevel="INFO" onMatch="ACCEPT" onMismatch="DENY" /> -->
+			<PatternLayout pattern="${LOG_PATTERN}" />
+			<Policies>
+				<SizeBasedTriggeringPolicy size="10240KB" />
+			</Policies>
+			<DefaultRolloverStrategy max="10" />
+		</RollingFile>
+		
+	</Appenders>
+	<Loggers>
+		<Logger name="com.belatrix.snippet" level="info" additivity="false">
+			<appender-ref ref="FileAppender" />
+			<appender-ref ref="ConsoleAppender" />
+		</Logger>
+	</Loggers>
+</Configuration>

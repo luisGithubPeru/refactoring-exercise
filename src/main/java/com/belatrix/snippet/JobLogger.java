@@ -10,10 +10,17 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+//import java.util.logging.Level;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+/**
+ * Class to save Logs on Database, Textfiles and Console
+ * 
+ * @author beto
+ *
+ */
 public class JobLogger {
 
 	private static boolean logToFile;
@@ -26,9 +33,9 @@ public class JobLogger {
 	private static Map dbParams;
 	private static Logger logger;
 
-	public JobLogger(boolean logToFileParam, boolean logToConsoleParam, boolean logToDatabaseParam,
-			boolean logMessageParam, boolean logWarningParam, boolean logErrorParam, Map dbParamsMap) {
-		logger = Logger.getLogger("MyLog");  
+	public JobLogger(boolean logToFileParam, boolean logToConsoleParam, boolean logToDatabaseParam, boolean logMessageParam, boolean logWarningParam, boolean logErrorParam, Map dbParamsMap) {
+		// logger = Logger.getLogger("MyLog");
+		logger = LoggerFactory.getLogger(JobLogger.class);
 		logError = logErrorParam;
 		logMessage = logMessageParam;
 		logWarning = logWarningParam;
@@ -39,6 +46,9 @@ public class JobLogger {
 	}
 
 	public static void LogMessage(String messageText, boolean message, boolean warning, boolean error) throws Exception {
+		logger.warn("BETO WARN");
+		logger.info("BETO INFO");
+		logger.debug("BETO DEBUG");
 		messageText.trim();
 		if (messageText == null || messageText.length() == 0) {
 			return;
@@ -55,8 +65,7 @@ public class JobLogger {
 		connectionProps.put("user", dbParams.get("userName"));
 		connectionProps.put("password", dbParams.get("password"));
 
-		connection = DriverManager.getConnection("jdbc:" + dbParams.get("dbms") + "://" + dbParams.get("serverName")
-				+ ":" + dbParams.get("portNumber") + "/", connectionProps);
+		connection = DriverManager.getConnection("jdbc:" + dbParams.get("dbms") + "://" + dbParams.get("serverName") + ":" + dbParams.get("portNumber") + "/", connectionProps);
 
 		int t = 0;
 		if (message && logMessage) {
@@ -78,33 +87,35 @@ public class JobLogger {
 		if (!logFile.exists()) {
 			logFile.createNewFile();
 		}
-		
+
 		FileHandler fh = new FileHandler(dbParams.get("logFileFolder") + "/logFile.txt");
 		ConsoleHandler ch = new ConsoleHandler();
-		
+
 		if (error && logError) {
 			l = l + "error " + DateFormat.getDateInstance(DateFormat.LONG).format(new Date()) + messageText;
 		}
 
 		if (warning && logWarning) {
-			l = l + "warning " +DateFormat.getDateInstance(DateFormat.LONG).format(new Date()) + messageText;
+			l = l + "warning " + DateFormat.getDateInstance(DateFormat.LONG).format(new Date()) + messageText;
 		}
 
 		if (message && logMessage) {
-			l = l + "message " +DateFormat.getDateInstance(DateFormat.LONG).format(new Date()) + messageText;
+			l = l + "message " + DateFormat.getDateInstance(DateFormat.LONG).format(new Date()) + messageText;
 		}
-		
-		if(logToFile) {
-			logger.addHandler(fh);
-			logger.log(Level.INFO, messageText);
+
+		if (logToFile) {
+			// logger.addHandler(fh);
+			// logger.log(Level.INFO, messageText);
+			logger.info(messageText);
 		}
-		
-		if(logToConsole) {
-			logger.addHandler(ch);
-			logger.log(Level.INFO, messageText);
+
+		if (logToConsole) {
+			// logger.addHandler(ch);
+			// logger.log(Level.INFO, messageText);
+			logger.info(messageText);
 		}
-		
-		if(logToDatabase) {
+
+		if (logToDatabase) {
 			stmt.executeUpdate("insert into Log_Values('" + message + "', " + String.valueOf(t) + ")");
 		}
 	}
